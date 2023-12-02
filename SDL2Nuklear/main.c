@@ -5,6 +5,7 @@
 
 void setupSDL();
 void setupNuklear();
+void cleanup();
 
 // SDL
 SDL_Window* win;
@@ -74,8 +75,12 @@ int main(int argc, char *argv[]) {
 
     int running = 1;
     /* GUI */
-    struct nk_colorf bg = { 0, 0, 0, 0 };
-    bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
+    struct nk_color bg = { 0, 0, 0, 0 };
+    bg.r = 183, bg.g = 169, bg.b = 255, bg.a = 1;
+
+    // transparent bg
+    
+    ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 
     while (running)
     {
@@ -83,83 +88,56 @@ int main(int argc, char *argv[]) {
         SDL_Event evt;
         nk_input_begin(ctx);
         while (SDL_PollEvent(&evt)) {
-            if (evt.type == SDL_QUIT) goto cleanup;
+            if (evt.type == SDL_QUIT) cleanup();
             nk_sdl_handle_event(&evt);
         }
         nk_input_end(ctx);
 
-        enum { EASY, HARD };
-        static int op = EASY;
-        static float value = 0.6f;
+        static float value = 0.0f;
+        static float horizontal = 0.0f;
+        static float vertical = 0.0f;
+
 
         /* GUI */
-        if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-        {
-            
-            static int property = 20;
-
-            nk_layout_row_static(ctx, 30, 80, 1);
-            if (nk_button_label(ctx, "button"))
-                fprintf(stdout, "button pressed\n");
+        if (nk_begin(ctx, "Horizontal", nk_rect(0, 750, WINDOW_WIDTH, 50), 0)) {
+            // Draw horizontal slider
             nk_layout_row_dynamic(ctx, 30, 2);
-            if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-            if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
 
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "background:", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            if (nk_combo_begin_color(ctx, nk_rgb_cf(bg), nk_vec2(nk_widget_width(ctx),400))) {
-                nk_layout_row_dynamic(ctx, 120, 1);
-                bg = nk_color_picker(ctx, bg, NK_RGBA);
-                nk_layout_row_dynamic(ctx, 25, 1);
-                bg.r = nk_propertyf(ctx, "#R:", 0, bg.r, 1.0f, 0.01f,0.005f);
-                bg.g = nk_propertyf(ctx, "#G:", 0, bg.g, 1.0f, 0.01f,0.005f);
-                bg.b = nk_propertyf(ctx, "#B:", 0, bg.b, 1.0f, 0.01f,0.005f);
-                bg.a = nk_propertyf(ctx, "#A:", 0, bg.a, 1.0f, 0.01f,0.005f);
-                nk_combo_end(ctx);
-            }
+            nk_slider_float(ctx, 0, &horizontal, WINDOW_HEIGHT, 0.1f);
         }
         nk_end(ctx);
 
-        if (nk_begin(ctx, "Show", nk_rect(500, 50, 220, 220),
-            NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE)) {
-            // fixed widget pixel width
-            nk_layout_row_static(ctx, 30, 80, 1);
-            if (nk_button_label(ctx, "button")) {
-                // event handling
-            }
-            // fixed widget window ratio width
-            nk_layout_row_dynamic(ctx, 30, 2);
-            if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-            if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-            // custom widget pixel width
-            nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-            {
-                nk_layout_row_push(ctx, 50);
-                nk_label(ctx, "Volume:", NK_TEXT_LEFT);
-                nk_layout_row_push(ctx, 110);
-                nk_slider_float(ctx, 0, &value, 1.0f, 0.1f);
-            }
-            nk_layout_row_end(ctx);
+        if (nk_begin(ctx, "Vertical", nk_rect(0, 0, 50, WINDOW_HEIGHT), 0)) {
+            // Draw horizontal slider
+            nk_layout_row_dynamic(ctx, 30, 1);
+
+            nk_slider_float(ctx, 0, &vertical, WINDOW_HEIGHT, 0.1f);
         }
         nk_end(ctx);
 
-        SDL_SetRenderDrawColor(renderer, (Uint8) (bg.r * 255), (Uint8) (bg.g * 255), (Uint8) (bg.b * 255), (Uint8) (bg.a * 255));
+        if (nk_begin(ctx, "Test", nk_rect(0, WINDOW_HEIGHT/2, WINDOW_WIDTH, 50), 0)) {
+            // Draw horizontal slider
+            nk_layout_row_dynamic(ctx, 30, 1);
+
+            nk_slider_float(ctx, 0, &value, WINDOW_HEIGHT, 0.1f);
+        }
+        nk_end(ctx);
+
+        fprintf(stdout, "%f\n", value);
+
+        SDL_SetRenderDrawColor(renderer, bg.r, bg.g, bg.b, bg.a);
         SDL_RenderClear(renderer);
 
         nk_sdl_render(NK_ANTI_ALIASING_ON);
 
         SDL_RenderPresent(renderer);
     }
+}
 
-cleanup:
+void cleanup() {
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);
     SDL_Quit();
-    return 0;
+    exit(0);
 }
