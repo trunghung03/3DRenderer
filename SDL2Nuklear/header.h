@@ -25,3 +25,5 @@
 #include "nuklear.h"
 #include "nuklear_sdl_renderer.h"
 #pragma warning(pop)
+
+#include "custom_nk_sliderv.h"

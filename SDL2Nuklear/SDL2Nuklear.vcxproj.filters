@@ -29,5 +29,8 @@
     <ClInclude Include="nuklear_sdl_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="custom_nk_sliderv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

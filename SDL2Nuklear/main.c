@@ -93,37 +93,30 @@ int main(int argc, char *argv[]) {
         }
         nk_input_end(ctx);
 
-        static float value = 0.0f;
+        // Sliders states
+        static float slider_step = 1.0f;
         static float horizontal = 0.0f;
         static float vertical = 0.0f;
 
-
         /* GUI */
-        if (nk_begin(ctx, "Horizontal", nk_rect(0, 750, WINDOW_WIDTH, 50), 0)) {
-            // Draw horizontal slider
-            nk_layout_row_dynamic(ctx, 30, 2);
 
-            nk_slider_float(ctx, 0, &horizontal, WINDOW_HEIGHT, 0.1f);
+        if (nk_begin(ctx, "Vertical", nk_rect(1150, 0, 50, WINDOW_HEIGHT), 0)) {
+            // Draw horizontal slider
+            nk_layout_row_dynamic(ctx, 750, 1);
+
+            nk_slider_floatv(ctx, 0, &vertical, 1000, slider_step);
         }
         nk_end(ctx);
 
-        if (nk_begin(ctx, "Vertical", nk_rect(0, 0, 50, WINDOW_HEIGHT), 0)) {
-            // Draw horizontal slider
-            nk_layout_row_dynamic(ctx, 30, 1);
-
-            nk_slider_float(ctx, 0, &vertical, WINDOW_HEIGHT, 0.1f);
-        }
-        nk_end(ctx);
-
-        if (nk_begin(ctx, "Test", nk_rect(0, WINDOW_HEIGHT/2, WINDOW_WIDTH, 50), 0)) {
+        
+        if (nk_begin(ctx, "Horizontal", nk_rect(0, 750, 1170, 50), 0)) {
             // Draw horizontal slider
             nk_layout_row_dynamic(ctx, 30, 1);
 
-            nk_slider_float(ctx, 0, &value, WINDOW_HEIGHT, 0.1f);
+            nk_slider_float(ctx, 0, &horizontal, 1000, slider_step);
         }
         nk_end(ctx);
-
-        fprintf(stdout, "%f\n", value);
+        
 
         SDL_SetRenderDrawColor(renderer, bg.r, bg.g, bg.b, bg.a);
         SDL_RenderClear(renderer);
