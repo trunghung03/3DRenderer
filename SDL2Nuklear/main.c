@@ -14,6 +14,10 @@ SDL_Window* win;
 SDL_Renderer* renderer;
 // Nuklear
 struct nk_context* ctx;
+// 3D stuff
+float* zBuffer = NULL;
+Vector* tris = NULL;
+Vector* inflatedTris = NULL;
 
 void setupSDL() {
     /* SDL setup */
@@ -80,7 +84,63 @@ int main(int argc, char *argv[]) {
     struct nk_color bg = { 0, 0, 0, 0 };
     bg.r = 183, bg.g = 169, bg.b = 255, bg.a = 1;
     // Triangle stuff
-    Triangle tris[4] = { 0 };
+    //Triangle tris[4] = { 0 };
+    tris = initVector();
+    {
+        // Draw triangle 1
+        Triangle t1 = { 0, 0, 0, 0 };
+        {
+            Vertex v1 = createVertex(100, 100, 100);
+            Vertex v2 = createVertex(-100, -100, 100);
+            Vertex v3 = createVertex(-100, 100, -100);
+
+            // white
+            struct nk_color color = { 255, 255, 255, 255 };
+
+            t1 = createTriangle(v1, v2, v3, color);
+        }
+
+        // Draw triangle 2
+        Triangle t2 = { 0, 0, 0, 0 };
+        {
+            Vertex v1 = createVertex(100, 100, 100);
+            Vertex v2 = createVertex(-100, -100, 100);
+            Vertex v3 = createVertex(100, -100, -100);
+
+            // red
+            struct nk_color color = { 255, 0, 0, 255 };
+
+            t2 = createTriangle(v1, v2, v3, color);
+        }
+
+        // Draw triangle 3
+        Triangle t3 = { 0, 0, 0, 0 };
+        {
+            Vertex v1 = createVertex(-100, 100, -100);
+            Vertex v2 = createVertex(100, -100, -100);
+            Vertex v3 = createVertex(100, 100, 100);
+
+            // green
+            struct nk_color color = { 0, 255, 0, 255 };
+
+            t3 = createTriangle(v1, v2, v3, color);
+        }
+
+        // Draw triangle 4
+        Triangle t4 = { 0, 0, 0, 0 };
+        {
+            Vertex v1 = createVertex(-100, 100, -100);
+            Vertex v2 = createVertex(100, -100, -100);
+            Vertex v3 = createVertex(-100, -100, 100);
+
+            // blue
+            struct nk_color color = { 0, 0, 255, 255 };
+
+            t4 = createTriangle(v1, v2, v3, color);
+        }
+
+        add(tris, t1); add(tris, t2); add(tris, t3); add(tris, t4);
+    }
 
     // transparent bg
     
@@ -123,65 +183,7 @@ int main(int argc, char *argv[]) {
 
         /* End GUI */
 
-        /* 3D */
-        {
-            // Draw triangle 1
-            Triangle t1 = { 0, 0, 0, 0 };
-            {
-                Vertex v1 = createVertex(100, 100, 100);
-                Vertex v2 = createVertex(-100, -100, 100);
-                Vertex v3 = createVertex(-100, 100, -100);
-
-                // white
-                struct nk_color color = { 255, 255, 255, 255 };
-
-                t1 = createTriangle(v1, v2, v3, color);
-            }
-
-            // Draw triangle 2
-            Triangle t2 = { 0, 0, 0, 0 };
-            {
-                Vertex v1 = createVertex(100, 100, 100);
-                Vertex v2 = createVertex(-100, -100, 100);
-                Vertex v3 = createVertex(100, -100, -100);
-
-                // red
-                struct nk_color color = { 255, 0, 0, 255 };
-
-                t2 = createTriangle(v1, v2, v3, color);
-            }
-
-            // Draw triangle 3
-            Triangle t3 = { 0, 0, 0, 0 };
-            {
-                Vertex v1 = createVertex(-100, 100, -100);
-                Vertex v2 = createVertex(100, -100, -100);
-                Vertex v3 = createVertex(100, 100, 100);
-
-                // green
-                struct nk_color color = { 0, 255, 0, 255 };
-
-                t3 = createTriangle(v1, v2, v3, color);
-            }
-
-            // Draw triangle 4
-            Triangle t4 = { 0, 0, 0, 0 };
-            {
-                Vertex v1 = createVertex(-100, 100, -100);
-                Vertex v2 = createVertex(100, -100, -100);
-                Vertex v3 = createVertex(-100, -100, 100);
-
-                // blue
-                struct nk_color color = { 0, 0, 255, 255 };
-
-                t4 = createTriangle(v1, v2, v3, color);
-            }
-
-            tris[0] = t1; tris[1] = t2; tris[2] = t3; tris[3] = t4;
-        }
-
-        /* End 3D */
-
+        /* 3D rendering */
         SDL_SetRenderDrawColor(renderer, bg.r, bg.g, bg.b, bg.a);
         SDL_RenderClear(renderer);
 
@@ -198,9 +200,9 @@ int main(int argc, char *argv[]) {
 
             // Iterate through all triangles
             for (i = 0; i < 4; i++) {
-                Vertex v1 = vertexTransform(&(tris[i].v1), &transform);
-                Vertex v2 = vertexTransform(&(tris[i].v2), &transform);
-                Vertex v3 = vertexTransform(&(tris[i].v3), &transform);
+                Vertex v1 = vertexTransform(&(at(tris, i)->v1), &transform);
+                Vertex v2 = vertexTransform(&(at(tris, i)->v2), &transform);
+                Vertex v3 = vertexTransform(&(at(tris, i)->v3), &transform);
 
                 // convert the origin to middle of the canvas
                 convertOrigin(&v1);
@@ -242,7 +244,7 @@ int main(int argc, char *argv[]) {
                             int zIndex = y * WINDOW_WIDTH + x;
                             if (zBuffer[zIndex] < depth) {
                                 //getShade(&(tris[i].color), angleCos);
-                                struct nk_color converted_color = getShadeSRGB(&(tris[i].color), angleCos);
+                                struct nk_color converted_color = getShadeSRGB(&(at(tris, i)->color), angleCos);
                                 //struct nk_color converted_color = getShade(&(tris[i].color), angleCos);
                                 drawPoints(x, y, &converted_color);
                                 zBuffer[zIndex] = depth;
@@ -300,8 +302,38 @@ inline struct nk_color getShadeSRGB(struct nk_color* color, float shade) {
     return result;
 }
 
+void inflate(Vector *tris) {
+    inflatedTris = initVector();
+    int i;
+    for (i = 0; i < inflatedTris->size; i++) {
+        Vertex m1 =
+            { (at(tris, i)->v1.x + at(tris, i)->v2.x) / 2, (at(tris, i)->v1.y + at(tris, i)->v2.y) / 2, (at(tris, i)->v1.z + at(tris, i)->v2.z) / 2};
+        Vertex m2 =
+            { (at(tris, i)->v2.x + at(tris, i)->v3.x) / 2, (at(tris, i)->v2.y + at(tris, i)->v3.y) / 2, (at(tris, i)->v2.z + at(tris, i)->v3.z) / 2 };
+        Vertex m3 =
+            { (at(tris, i)->v1.x + at(tris, i)->v3.x) / 2, (at(tris, i)->v1.y + at(tris, i)->v3.y) / 2, (at(tris, i)->v1.z + at(tris, i)->v3.z) / 2 };
+        add(inflatedTris, (Triangle) { at(tris, i)->v1, m1, m3, at(tris, i)->color });
+        add(inflatedTris, (Triangle) { at(tris, i)->v2, m1, m2, at(tris, i)->color });
+        add(inflatedTris, (Triangle) { at(tris, i)->v3, m2, m3, at(tris, i)->color });
+        add(inflatedTris, (Triangle) { m1, m2, m3, at(tris, i)->color });
+    }
+
+    for (i = 0; i < inflatedTris->size; i++) {
+        Vertex *vertices[] = { &(inflatedTris->data->v1), &(inflatedTris->data->v2), &(inflatedTris->data->v3) };
+        int j;
+        for (j = 0; j < 3; j++) {
+            float l = sqrtf(vertices[j]->x * vertices[j]->x + vertices[j]->y * vertices[j]->y + vertices[j]->z + vertices[j]->z) / 30000;
+
+            vertices[j]->x /= l;
+            vertices[j]->y /= l;
+            vertices[j]->z /= l;
+        }
+    }
+}
+
 void cleanup() {
     free(zBuffer);
+    freeVector(tris);
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);

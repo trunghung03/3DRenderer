@@ -31,6 +31,7 @@
 
 #include "custom_nk_sliderv.h"
 #include "geometry.h"
+#include "vector.h"
 
 #define SLIDER_WIDTH 50
 
