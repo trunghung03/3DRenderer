@@ -1,5 +1,4 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,6 +10,10 @@
 #include <time.h>
 
 #include <SDL2/SDL.h>
+
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 500
+#define WINDOW_PIXEL_COUNT (WINDOW_WIDTH * WINDOW_HEIGHT)
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -27,3 +30,12 @@
 #pragma warning(pop)
 
 #include "custom_nk_sliderv.h"
+#include "geometry.h"
+
+#define SLIDER_WIDTH 50
+
+#define YAW_SLIDER_Y_POSITION (93.0f / 100.0f * WINDOW_HEIGHT)
+#define YAW_SLIDER_LENGTH (98.0f / 100.0f * WINDOW_WIDTH)
+
+#define PITCH_SLIDER_X_POSITION (93.0f / 100.0f * WINDOW_WIDTH)
+#define PITCH_SLIDER_LENGTH (93.0f / 100.0f * WINDOW_HEIGHT)
