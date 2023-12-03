@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
 
         // Sliders states
         static float slider_step = 1.0f;
+        static float slider_max = 1000.0f;
         static float horizontal = 0.0f;
         static float vertical = 0.0f;
 
@@ -104,7 +105,7 @@ int main(int argc, char *argv[]) {
             // Draw horizontal slider
             nk_layout_row_dynamic(ctx, 750, 1);
 
-            nk_slider_floatv(ctx, 0, &vertical, 1000, slider_step);
+            nk_slider_floatv(ctx, 0, &vertical, slider_max, slider_step);
         }
         nk_end(ctx);
 
@@ -113,7 +114,7 @@ int main(int argc, char *argv[]) {
             // Draw horizontal slider
             nk_layout_row_dynamic(ctx, 30, 1);
 
-            nk_slider_float(ctx, 0, &horizontal, 1000, slider_step);
+            nk_slider_float(ctx, 0, &horizontal, slider_max, slider_step);
         }
         nk_end(ctx);
         
