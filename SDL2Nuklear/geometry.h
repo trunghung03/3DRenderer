@@ -3,6 +3,8 @@
 #include <math.h>
 
 #define MATRIX_ELEM_COUNT 3 * 3
+#define WRAP_OVER(X) ((X + ANIMATION_SPEED) > CIRCLE_DEGREE ? ANIMATION_SPEED : X + ANIMATION_SPEED)
+#define WRAP_UNDER(X) ((X - ANIMATION_SPEED) < 0.0f ? (CIRCLE_DEGREE - ANIMATION_SPEED) : X - ANIMATION_SPEED)
 
 // TODO: Convert these functions to use reference instead of copy
 

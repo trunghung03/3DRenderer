@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     int running = 1;
     /* GUI */
     struct nk_color bg = { 0, 0, 0, 0 };
+    // Screen background color
     bg.r = 183, bg.g = 169, bg.b = 255, bg.a = 1;
     // Triangle stuff
     //Triangle tris[4] = { 0 };
@@ -143,12 +144,17 @@ int main(int argc, char *argv[]) {
         add(tris, t1); add(tris, t2); add(tris, t3); add(tris, t4);
     }
 
+        int i;
+        for (i = 0; i < SPHERE_SUBDIVISION; i++) {
     inflate(tris);
     freeVector(tris);
     tris = inflatedTris;
+        }
+    }
 
     // transparent bg
     
+    // transparent nk_window background
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 
     while (running)
@@ -167,6 +173,12 @@ int main(int argc, char *argv[]) {
         static float slider_max = 360.0f;
         static float yaw = 180.0f;
         static float pitch = 180.0f;
+
+        // Can't use % for wraparound because modulo doesn't take float
+        //yaw = (yaw + 0.5f) > 360.0f ? 0.5f : yaw + 0.5f;
+        yaw = WRAP_OVER(yaw);
+        //pitch = (pitch - 0.5f) < 0.0f ? 359.5f : pitch - 0.5f;
+        pitch = WRAP_UNDER(pitch);
 
         /* GUI */
 
