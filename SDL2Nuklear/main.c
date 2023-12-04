@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
     struct nk_color bg = { 0, 0, 0, 0 };
     // Screen background color
     bg.r = 183, bg.g = 169, bg.b = 255, bg.a = 1;
+
     // Triangle stuff
     //Triangle tris[4] = { 0 };
     tris = initVector();
@@ -142,18 +143,22 @@ int main(int argc, char *argv[]) {
         }
 
         add(tris, t1); add(tris, t2); add(tris, t3); add(tris, t4);
-    }
 
         int i;
         for (i = 0; i < SPHERE_SUBDIVISION; i++) {
-    inflate(tris);
-    freeVector(tris);
-    tris = inflatedTris;
+            inflate(tris);
+            freeVector(tris);
+            tris = inflatedTris;
         }
     }
 
-    // transparent bg
-    
+    // init zBuffer with minimum z
+    zBuffer = (float*)malloc(WINDOW_PIXEL_COUNT * sizeof(float));
+    if (zBuffer == NULL) {
+        fprintf(stderr, "Unable to create zBuffer.\n");
+        exit(1);
+    }
+
     // transparent nk_window background
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 
@@ -208,12 +213,14 @@ int main(int argc, char *argv[]) {
         // Draw triangles ortho
         {
             int i;
-            Matrix3 yawTransform = yawTransformMatrix(yaw);
-            Matrix3 pitchTransform = pitchTransformMatrix(pitch);
+            Matrix3 yawTransform = yawTransformMatrix(&yaw);
+            Matrix3 pitchTransform = pitchTransformMatrix(&pitch);
             Matrix3 transform = multiplyMatrix(&yawTransform, &pitchTransform);
 
-            // init zBuffer with minimum z
-            zBuffer = (float *) malloc(WINDOW_PIXEL_COUNT * sizeof(float));
+            // Reset zBuffer
+            for (i = 0; i < WINDOW_PIXEL_COUNT; i++) {
+                zBuffer[i] = FLT_MIN;
+            }
 
             // Iterate through all triangles
             for (i = 0; i < tris->size; i++) {

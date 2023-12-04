@@ -71,8 +71,8 @@ Matrix3 multiplyMatrix(Matrix3 *m1, Matrix3 *m2) {
 	return createMatrix(resultValues);
 }
 
-Matrix3 yawTransformMatrix(float yawValue) {
-	float yaw = to_rad(yawValue);
+Matrix3 yawTransformMatrix(float *yawValue) {
+	float yaw = to_rad(*yawValue);
 	float resultValues[] = {
 		(float) cos(yaw),	0,	(float) -sin(yaw),
 		0,					1,	0,
@@ -81,8 +81,8 @@ Matrix3 yawTransformMatrix(float yawValue) {
 	return createMatrix(resultValues);
 }
 
-Matrix3 pitchTransformMatrix(float pitchValue) {
-	float pitch = to_rad(pitchValue);
+Matrix3 pitchTransformMatrix(float *pitchValue) {
+	float pitch = to_rad(*pitchValue);
 	float resultValues[] = {
 		1, 0, 0,
 		0, (float) cos(pitch), (float) sin(pitch),
