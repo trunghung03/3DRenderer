@@ -7,6 +7,7 @@ int drawLines(Vertex *v1, Vertex *v2);
 int drawPoints(int x, int y, struct nk_color *color);
 struct nk_color getShade(struct nk_color* color, float shade);
 struct nk_color getShadeSRGB(struct nk_color* color, float shade);
+void inflate(Vector* tris);
 void cleanup();
 
 // SDL
@@ -142,6 +143,10 @@ int main(int argc, char *argv[]) {
         add(tris, t1); add(tris, t2); add(tris, t3); add(tris, t4);
     }
 
+    inflate(tris);
+    freeVector(tris);
+    tris = inflatedTris;
+
     // transparent bg
     
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
@@ -199,7 +204,7 @@ int main(int argc, char *argv[]) {
             zBuffer = (float *) malloc(WINDOW_PIXEL_COUNT * sizeof(float));
 
             // Iterate through all triangles
-            for (i = 0; i < 4; i++) {
+            for (i = 0; i < tris->size; i++) {
                 Vertex v1 = vertexTransform(&(at(tris, i)->v1), &transform);
                 Vertex v2 = vertexTransform(&(at(tris, i)->v2), &transform);
                 Vertex v3 = vertexTransform(&(at(tris, i)->v3), &transform);
@@ -305,24 +310,27 @@ inline struct nk_color getShadeSRGB(struct nk_color* color, float shade) {
 void inflate(Vector *tris) {
     inflatedTris = initVector();
     int i;
-    for (i = 0; i < inflatedTris->size; i++) {
+    for (i = 0; i < tris->size; i++) {
+        Triangle* tri = at(tris, i);
         Vertex m1 =
-            { (at(tris, i)->v1.x + at(tris, i)->v2.x) / 2, (at(tris, i)->v1.y + at(tris, i)->v2.y) / 2, (at(tris, i)->v1.z + at(tris, i)->v2.z) / 2};
+            { (tri->v1.x + tri->v2.x) / 2, (tri->v1.y + tri->v2.y) / 2, (tri->v1.z + tri->v2.z) / 2 };
         Vertex m2 =
-            { (at(tris, i)->v2.x + at(tris, i)->v3.x) / 2, (at(tris, i)->v2.y + at(tris, i)->v3.y) / 2, (at(tris, i)->v2.z + at(tris, i)->v3.z) / 2 };
+            { (tri->v2.x + tri->v3.x) / 2, (tri->v2.y + tri->v3.y) / 2, (tri->v2.z + tri->v3.z) / 2 };
         Vertex m3 =
-            { (at(tris, i)->v1.x + at(tris, i)->v3.x) / 2, (at(tris, i)->v1.y + at(tris, i)->v3.y) / 2, (at(tris, i)->v1.z + at(tris, i)->v3.z) / 2 };
-        add(inflatedTris, (Triangle) { at(tris, i)->v1, m1, m3, at(tris, i)->color });
-        add(inflatedTris, (Triangle) { at(tris, i)->v2, m1, m2, at(tris, i)->color });
-        add(inflatedTris, (Triangle) { at(tris, i)->v3, m2, m3, at(tris, i)->color });
-        add(inflatedTris, (Triangle) { m1, m2, m3, at(tris, i)->color });
+            { (tri->v1.x + tri->v3.x) / 2, (tri->v1.y + tri->v3.y) / 2, (tri->v1.z + tri->v3.z) / 2 };
+        add(inflatedTris, (Triangle) { tri->v1, m1, m3, tri->color });
+        add(inflatedTris, (Triangle) { tri->v2, m1, m2, tri->color });
+        add(inflatedTris, (Triangle) { tri->v3, m2, m3, tri->color });
+        add(inflatedTris, (Triangle) { m1, m2, m3, tri->color });
     }
 
     for (i = 0; i < inflatedTris->size; i++) {
-        Vertex *vertices[] = { &(inflatedTris->data->v1), &(inflatedTris->data->v2), &(inflatedTris->data->v3) };
+
+        Vertex* vertices[] = { &(at(inflatedTris, i)->v1), &(at(inflatedTris, i)->v2), &(at(inflatedTris, i)->v3) };
+
         int j;
         for (j = 0; j < 3; j++) {
-            float l = sqrtf(vertices[j]->x * vertices[j]->x + vertices[j]->y * vertices[j]->y + vertices[j]->z + vertices[j]->z) / 30000;
+            float l = sqrtf(vertices[j]->x * vertices[j]->x + vertices[j]->y * vertices[j]->y + vertices[j]->z * vertices[j]->z) / sqrtf(30000);
 
             vertices[j]->x /= l;
             vertices[j]->y /= l;
@@ -333,7 +341,8 @@ void inflate(Vector *tris) {
 
 void cleanup() {
     free(zBuffer);
-    freeVector(tris);
+    //freeVector(tris);
+    freeVector(inflatedTris);
     nk_sdl_shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);

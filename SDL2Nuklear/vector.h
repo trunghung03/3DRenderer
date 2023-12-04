@@ -7,7 +7,7 @@
 
 #include "geometry.h"
 
-#define VECTOR_INIT_SIZE 3
+#define VECTOR_INIT_SIZE 10
 
 typedef struct Vector {
     uint64_t size;
